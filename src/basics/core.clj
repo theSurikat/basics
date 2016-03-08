@@ -1,18 +1,21 @@
 (ns basics.core
   (:require [clojure.math.numeric-tower :as math]))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
-
-(defn sum [xx]
+(defn sum
   "Take the sum of a collection"
-  (apply + xx))
+  ([xx] (sum xx 0))
+  ([xx total]
+    (if (empty? xx)
+      total
+      (recur (rest xx) (+ (first xx) total)))))
 
-(defn prod [xx]
+(defn prod
   "Takes the product of a collection"
-  (apply *' xx))
+  ([xx] (prod xx 1))
+  ([xx total]
+    (if (empty xx)
+      total
+      (recur (rest xx) (* (first xx) total)))))
 
 (defn sqrt [n]
   "Find the square root"
@@ -26,17 +29,13 @@
   "Cubes n"
   (* n n n))
 
-(defn expo [a n]
+(defn expo
   "Takes a to the power of n"
-  (prod (repeat n a)))
-
-(defn quotient [xx]
-  "Takes the quotient of a collection"
-  (apply / xx))
-
-(defn diff [xx]
-  "Finds the difference of a collection, subtracting the remaining parts from the first"
-  (apply - xx))
+  ([a n] (expo a n 1))
+  ([a n total]
+    (if (zero? n)
+      total
+      (recur a (- n 1) (* total a)))))
 
 (def fibo
   "The fibonacci sequence"
@@ -65,14 +64,22 @@
   "Finds the nth triangle-number"
   (sum (range (inc n))))
 
-(def triangles
-  "A list of triangle numbers"
-  (map triangle-number (iterate inc 1)))
+(defn tri*
+  "Generates lazy sequence of triangular numbers"
+  ([] (tri* 0 1))
+  ([sum n]
+     (let [new-sum (+ sum n)]
+       (cons new-sum (lazy-seq (tri* new-sum (inc n)))))))
 
-(defn fact [n]
-  "Take the factorial of n"
-  (if (= n 1) 1
-    (*' n (fact (dec n)))))
+(def triangle-numbers (tri*))
+
+(defn fact
+  "Take the factorial of x"
+  ([x] (fact x 1))
+  ([x total]
+    (if (= x 1)
+      total
+      (recur (- x 1) (*' total x)))))
 
 (defn mean [xx]
   "Find the mean of a set"
@@ -108,3 +115,7 @@
 (defn std [xx]
   "Find the standard deviation of a set"
   (sqrt (variance xx)))
+
+(defn explode-to-digits [number]
+  "Turn a string number into a sequence of its digits"
+      (map #(Character/digit % 10) (str number)))
